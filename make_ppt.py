@@ -1,18 +1,28 @@
-"""Generate a PowerPoint presentation on Repeat Breeding in cattle."""
+"""Generate a PowerPoint presentation on Repeat Breeding in cattle.
 
+Theme: navy + amber/orange (modern dairy)
+Includes embedded cow & buffalo photographs from Wikimedia Commons.
+"""
+
+import os
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN
 
-# ---------- Theme colors ----------
-PRIMARY = RGBColor(0x0B, 0x3D, 0x2E)      # deep green
-ACCENT  = RGBColor(0xC9, 0xA2, 0x27)      # gold
-LIGHT   = RGBColor(0xF5, 0xF1, 0xE8)      # cream
-DARK    = RGBColor(0x1F, 0x2A, 0x24)      # near-black green
+HERE = os.path.dirname(os.path.abspath(__file__))
+IMG  = os.path.join(HERE, "images")
+
+# ---------- New theme colors (navy + amber) ----------
+PRIMARY = RGBColor(0x1B, 0x3A, 0x57)      # deep navy
+ACCENT  = RGBColor(0xE0, 0x7A, 0x18)      # warm amber/orange
+ACCENT2 = RGBColor(0x2E, 0x86, 0xAB)      # ocean teal
+LIGHT   = RGBColor(0xF7, 0xF3, 0xEB)      # warm cream
+DARK    = RGBColor(0x1F, 0x25, 0x33)      # near-black navy
 WHITE   = RGBColor(0xFF, 0xFF, 0xFF)
-GRAY    = RGBColor(0x55, 0x55, 0x55)
+GRAY    = RGBColor(0x55, 0x5C, 0x66)
+SOFT    = RGBColor(0xE6, 0xDF, 0xD0)      # soft warm gray
 
 prs = Presentation()
 prs.slide_width  = Inches(13.333)
@@ -21,7 +31,15 @@ SW, SH = prs.slide_width, prs.slide_height
 
 BLANK = prs.slide_layouts[6]
 
+# images
+COW_HOLSTEIN = os.path.join(IMG, "cow_holstein.jpg")
+COW_DAIRY    = os.path.join(IMG, "cow_dairy.jpg")
+COW_FARM     = os.path.join(IMG, "cow_farm.jpg")
+SAHIWAL      = os.path.join(IMG, "sahiwal.jpg")
+BUFFALO      = os.path.join(IMG, "buffalo_murrah.jpg")
 
+
+# ---------- helpers ----------
 def add_bg(slide, color=LIGHT):
     bg = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, SW, SH)
     bg.line.fill.background()
@@ -31,12 +49,12 @@ def add_bg(slide, color=LIGHT):
 
 
 def add_side_bar(slide):
-    bar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, Inches(0.35), SH)
+    bar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, Inches(0.32), SH)
     bar.line.fill.background()
     bar.fill.solid()
     bar.fill.fore_color.rgb = PRIMARY
-    accent = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.35), 0,
-                                    Inches(0.08), SH)
+    accent = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE,
+                                    Inches(0.32), 0, Inches(0.07), SH)
     accent.line.fill.background()
     accent.fill.solid()
     accent.fill.fore_color.rgb = ACCENT
@@ -63,7 +81,7 @@ def add_footer(slide, page_num, total):
 
 
 def add_title(slide, title, subtitle=None):
-    tb = slide.shapes.add_textbox(Inches(0.7), Inches(0.35),
+    tb = slide.shapes.add_textbox(Inches(0.65), Inches(0.32),
                                   Inches(12.2), Inches(0.9))
     tf = tb.text_frame
     tf.margin_left = tf.margin_right = 0
@@ -72,15 +90,14 @@ def add_title(slide, title, subtitle=None):
     r.font.size = Pt(34); r.font.bold = True
     r.font.color.rgb = PRIMARY; r.font.name = "Calibri"
 
-    # gold underline
     u = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE,
-                               Inches(0.7), Inches(1.18),
-                               Inches(1.2), Inches(0.07))
+                               Inches(0.65), Inches(1.18),
+                               Inches(1.4), Inches(0.07))
     u.line.fill.background(); u.fill.solid()
     u.fill.fore_color.rgb = ACCENT
 
     if subtitle:
-        sb = slide.shapes.add_textbox(Inches(0.7), Inches(1.28),
+        sb = slide.shapes.add_textbox(Inches(0.65), Inches(1.28),
                                       Inches(12.2), Inches(0.4))
         sp = sb.text_frame.paragraphs[0]
         sr = sp.add_run(); sr.text = subtitle
@@ -88,7 +105,7 @@ def add_title(slide, title, subtitle=None):
         sr.font.color.rgb = GRAY; sr.font.name = "Calibri"
 
 
-def add_bullets(slide, bullets, left=Inches(0.85), top=Inches(1.8),
+def add_bullets(slide, bullets, left=Inches(0.85), top=Inches(1.85),
                 width=Inches(12), height=Inches(5.0), size=18):
     tb = slide.shapes.add_textbox(left, top, width, height)
     tf = tb.text_frame; tf.word_wrap = True
@@ -107,12 +124,12 @@ def add_bullets(slide, bullets, left=Inches(0.85), top=Inches(1.8),
         r.font.size = Pt(size - level * 2)
         r.font.color.rgb = DARK
         r.font.name = "Calibri"
-        if level == 0:
-            r.font.bold = False
 
 
-def add_card(slide, left, top, width, height, title, body, head_color=PRIMARY):
-    head = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, left, top, width, Inches(0.55))
+def add_card(slide, left, top, width, height, title, body,
+             head_color=PRIMARY):
+    head = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, left, top,
+                                  width, Inches(0.55))
     head.line.fill.background(); head.fill.solid()
     head.fill.fore_color.rgb = head_color
     htf = head.text_frame; htf.margin_left = Inches(0.15)
@@ -139,35 +156,44 @@ def add_card(slide, left, top, width, height, title, body, head_color=PRIMARY):
         r.font.name = "Calibri"
 
 
+def add_caption(slide, left, top, width, text):
+    cb = slide.shapes.add_textbox(left, top, width, Inches(0.3))
+    p = cb.text_frame.paragraphs[0]; p.alignment = PP_ALIGN.CENTER
+    r = p.add_run(); r.text = text
+    r.font.size = Pt(10); r.font.italic = True
+    r.font.color.rgb = GRAY; r.font.name = "Calibri"
+
+
+def add_image_with_frame(slide, path, left, top, width, height,
+                         caption=None, frame_color=PRIMARY):
+    # outer thin frame
+    frame = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE,
+                                   left - Inches(0.05), top - Inches(0.05),
+                                   width + Inches(0.1), height + Inches(0.1))
+    frame.line.fill.background(); frame.fill.solid()
+    frame.fill.fore_color.rgb = frame_color
+    pic = slide.shapes.add_picture(path, left, top, width=width, height=height)
+    if caption:
+        add_caption(slide, left, top + height + Inches(0.05),
+                    width, caption)
+    return pic
+
+
 # ============================================================
-# SLIDE 1 — TITLE
+# SLIDE 1 — TITLE (with hero buffalo + cow images)
 # ============================================================
 s = prs.slides.add_slide(BLANK)
 add_bg(s, PRIMARY)
 
-# decorative gold band
-band = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, Inches(3.1),
-                          SW, Inches(1.4))
+# soft amber band
+band = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, Inches(3.0),
+                          SW, Inches(1.5))
 band.line.fill.background(); band.fill.solid()
 band.fill.fore_color.rgb = ACCENT
 
-# title
-tb = s.shapes.add_textbox(Inches(0.7), Inches(3.2), Inches(12), Inches(0.8))
-p = tb.text_frame.paragraphs[0]
-r = p.add_run(); r.text = "REPEAT BREEDING"
-r.font.size = Pt(54); r.font.bold = True
-r.font.color.rgb = PRIMARY; r.font.name = "Calibri"
-
-tb2 = s.shapes.add_textbox(Inches(0.7), Inches(3.95), Inches(12), Inches(0.6))
-p2 = tb2.text_frame.paragraphs[0]
-r2 = p2.add_run()
-r2.text = "Causes, Diagnosis, Treatment & Prevention in Dairy Cattle"
-r2.font.size = Pt(22); r2.font.color.rgb = DARK
-r2.font.italic = True; r2.font.name = "Calibri"
-
-# top tag
-tag = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.7), Inches(0.7),
-                        Inches(3.0), Inches(0.45))
+# tag
+tag = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.65), Inches(0.65),
+                        Inches(3.2), Inches(0.45))
 tag.line.fill.background(); tag.fill.solid()
 tag.fill.fore_color.rgb = ACCENT
 ttf = tag.text_frame; ttf.margin_left = Inches(0.15)
@@ -176,12 +202,40 @@ tr = tp.add_run(); tr.text = "ANIMAL REPRODUCTION"
 tr.font.size = Pt(13); tr.font.bold = True
 tr.font.color.rgb = PRIMARY; tr.font.name = "Calibri"
 
-# bottom info
-info = s.shapes.add_textbox(Inches(0.7), Inches(6.4), Inches(12), Inches(0.6))
-ip = info.text_frame.paragraphs[0]
+# title
+tb = s.shapes.add_textbox(Inches(0.65), Inches(3.1), Inches(12), Inches(0.9))
+p = tb.text_frame.paragraphs[0]
+r = p.add_run(); r.text = "REPEAT BREEDING"
+r.font.size = Pt(56); r.font.bold = True
+r.font.color.rgb = PRIMARY; r.font.name = "Calibri"
+
+tb2 = s.shapes.add_textbox(Inches(0.65), Inches(3.95), Inches(12), Inches(0.6))
+p2 = tb2.text_frame.paragraphs[0]
+r2 = p2.add_run()
+r2.text = "Causes, Diagnosis, Treatment & Prevention in Cows and Buffaloes"
+r2.font.size = Pt(22); r2.font.color.rgb = DARK
+r2.font.italic = True; r2.font.name = "Calibri"
+
+# Hero photos in lower area
+add_image_with_frame(s, COW_HOLSTEIN, Inches(0.65), Inches(5.05),
+                     Inches(4.0), Inches(1.7),
+                     "Holstein Friesian (dairy cow)", WHITE)
+add_image_with_frame(s, BUFFALO, Inches(8.7), Inches(5.05),
+                     Inches(4.0), Inches(1.7),
+                     "Murrah buffalo", WHITE)
+
+info = s.shapes.add_textbox(Inches(4.8), Inches(5.4),
+                            Inches(3.8), Inches(1.4))
+itf = info.text_frame
+ip = itf.paragraphs[0]; ip.alignment = PP_ALIGN.CENTER
 ir = ip.add_run()
-ir.text = "Veterinary Gynaecology & Obstetrics  |  Seminar Presentation"
-ir.font.size = Pt(14); ir.font.color.rgb = WHITE; ir.font.name = "Calibri"
+ir.text = "Veterinary Gynaecology\n& Obstetrics"
+ir.font.size = Pt(18); ir.font.bold = True
+ir.font.color.rgb = WHITE; ir.font.name = "Calibri"
+p2 = itf.add_paragraph(); p2.alignment = PP_ALIGN.CENTER
+r2 = p2.add_run(); r2.text = "Seminar Presentation"
+r2.font.size = Pt(13); r2.font.italic = True
+r2.font.color.rgb = WHITE; r2.font.name = "Calibri"
 
 # ============================================================
 # SLIDE 2 — OUTLINE
@@ -191,19 +245,24 @@ add_bg(s); add_side_bar(s)
 add_title(s, "Presentation Outline")
 
 items = [
-    ("1.  Introduction & Definition",      Inches(0.85), Inches(1.85)),
-    ("2.  Incidence & Economic Impact",    Inches(0.85), Inches(2.45)),
-    ("3.  Etiology / Causes",              Inches(0.85), Inches(3.05)),
-    ("4.  Pathophysiology",                Inches(0.85), Inches(3.65)),
-    ("5.  Diagnosis & Clinical Approach",  Inches(0.85), Inches(4.25)),
-    ("6.  Treatment & Management",         Inches(6.85), Inches(1.85)),
-    ("7.  Hormonal Therapy Protocols",     Inches(6.85), Inches(2.45)),
-    ("8.  Prevention Strategies",          Inches(6.85), Inches(3.05)),
-    ("9.  Recent Advances",                Inches(6.85), Inches(3.65)),
-    ("10. Conclusion & References",        Inches(6.85), Inches(4.25)),
+    "1.  Introduction & Definition",
+    "2.  Incidence & Economic Impact",
+    "3.  Etiology / Causes",
+    "4.  Pathophysiology",
+    "5.  Diagnosis & Clinical Approach",
+    "6.  Treatment & Management",
+    "7.  Hormonal Therapy Protocols",
+    "8.  Buffalo-Specific Repeat Breeding",
+    "9.  Prevention Strategies",
+    "10. Recent Advances",
+    "11. Conclusion & References",
 ]
-for text, l, t in items:
-    bullet = s.shapes.add_shape(MSO_SHAPE.OVAL, l, t + Inches(0.1),
+for i, text in enumerate(items):
+    col = i // 6
+    row = i % 6
+    l = Inches(0.85 + col * 6.0)
+    t = Inches(1.85 + row * 0.7)
+    bullet = s.shapes.add_shape(MSO_SHAPE.OVAL, l, t + Inches(0.12),
                                 Inches(0.18), Inches(0.18))
     bullet.line.fill.background(); bullet.fill.solid()
     bullet.fill.fore_color.rgb = ACCENT
@@ -212,27 +271,36 @@ for text, l, t in items:
     r = p.add_run(); r.text = text
     r.font.size = Pt(18); r.font.color.rgb = DARK; r.font.name = "Calibri"
 
-add_footer(s, 2, 18)
+add_footer(s, 2, 19)
 
 # ============================================================
-# SLIDE 3 — INTRODUCTION
+# SLIDE 3 — INTRODUCTION (with cow image)
 # ============================================================
 s = prs.slides.add_slide(BLANK); add_bg(s); add_side_bar(s)
 add_title(s, "Introduction",
           "Reproductive efficiency is the backbone of profitable dairy farming")
+
 add_bullets(s, [
-    "Reproduction is the most important factor governing the economic success "
-    "of any dairy enterprise.",
+    "Reproduction is the most important factor governing the economic "
+    "success of any dairy enterprise.",
     "A normal fertile cow should conceive within 60–90 days post-partum and "
     "deliver one calf every 12–13 months.",
-    "Failure to conceive after repeated inseminations — despite normal estrous "
-    "cycles and apparently healthy genitalia — is termed REPEAT BREEDING.",
-    "It is one of the most frustrating and economically damaging reproductive "
-    "disorders in cattle and buffaloes worldwide.",
-    "Often multifactorial — involving the cow, the bull/semen, the inseminator "
-    "and the environment.",
-])
-add_footer(s, 3, 18)
+    "Failure to conceive after repeated inseminations — despite normal "
+    "estrous cycles and apparently healthy genitalia — is termed "
+    "REPEAT BREEDING.",
+    "It is one of the most frustrating and economically damaging "
+    "reproductive disorders in cattle and buffaloes worldwide.",
+    "Often multifactorial — involving the cow, the bull/semen, the "
+    "inseminator and the environment.",
+], left=Inches(0.85), top=Inches(1.85), width=Inches(8.0), size=16)
+
+add_image_with_frame(s, COW_DAIRY, Inches(9.1), Inches(1.95),
+                     Inches(3.7), Inches(2.78),
+                     "Holstein dairy cow on pasture")
+add_image_with_frame(s, SAHIWAL, Inches(9.1), Inches(5.0),
+                     Inches(3.7), Inches(1.85),
+                     "Sahiwal — indigenous Indian dairy breed")
+add_footer(s, 3, 19)
 
 # ============================================================
 # SLIDE 4 — DEFINITION
@@ -240,10 +308,9 @@ add_footer(s, 3, 18)
 s = prs.slides.add_slide(BLANK); add_bg(s); add_side_bar(s)
 add_title(s, "Definition")
 
-# big quote-style definition
 box = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
                          Inches(0.85), Inches(1.85),
-                         Inches(11.6), Inches(1.7))
+                         Inches(11.6), Inches(1.8))
 box.line.color.rgb = ACCENT; box.line.width = Pt(2)
 box.fill.solid(); box.fill.fore_color.rgb = WHITE
 tf = box.text_frame; tf.word_wrap = True
@@ -259,15 +326,14 @@ r.text = ("A repeat breeder is a cow / buffalo of normal breeding age and "
 r.font.size = Pt(17); r.font.italic = True
 r.font.color.rgb = DARK; r.font.name = "Calibri"
 
-# key points
 add_bullets(s, [
     "Also known as: Repeat Breeder Syndrome / Repeat Breeder Cow (RBC).",
     "Synonym in older literature: 'Conception Failure'.",
     ("Key criteria — (a) regular oestrous cycles, (b) ≥3 services, "
      "(c) no palpable abnormality, (d) fertile semen, (e) competent AI."),
-    "Differentiate from: Anoestrus, sub-oestrus, true infertility and sterility.",
-], top=Inches(3.8), size=17)
-add_footer(s, 4, 18)
+    "Differentiate from anoestrus, sub-oestrus, true infertility and sterility.",
+], top=Inches(3.95), size=17)
+add_footer(s, 4, 19)
 
 # ============================================================
 # SLIDE 5 — INCIDENCE
@@ -283,7 +349,6 @@ add_bullets(s, [
     "Buffaloes: 8 – 18 %, often masked by silent oestrus.",
 ], top=Inches(1.85), size=17)
 
-# Economic impact cards
 add_card(s, Inches(0.85), Inches(4.0), Inches(3.85), Inches(2.9),
          "Direct Losses",
          ["Extra AI doses & semen cost",
@@ -300,9 +365,10 @@ add_card(s, Inches(9.05), Inches(4.0), Inches(3.85), Inches(2.9),
          "Estimated Cost",
          ["Each extra open day ≈ ₹150–250",
           "Per repeat breeder: ₹8 000–15 000 / lactation",
-          "National-level losses run into thousands of crores"])
+          "National-level losses run into thousands of crores"],
+         head_color=ACCENT2)
 
-add_footer(s, 5, 18)
+add_footer(s, 5, 19)
 
 # ============================================================
 # SLIDE 6 — CAUSES OVERVIEW
@@ -311,7 +377,6 @@ s = prs.slides.add_slide(BLANK); add_bg(s); add_side_bar(s)
 add_title(s, "Etiology — An Overview",
           "Repeat breeding is multifactorial; causes are grouped into four broad heads")
 
-# Four equal cards
 add_card(s, Inches(0.85), Inches(1.95), Inches(2.95), Inches(4.9),
          "1. Fertilization Failure",
          ["Improper AI timing",
@@ -332,16 +397,16 @@ add_card(s, Inches(7.15), Inches(1.95), Inches(2.95), Inches(4.9),
           "Wrong AI technique",
           "Faulty semen handling",
           "Inadequate records",
-          "Stress at AI"])
+          "Stress at AI"], head_color=ACCENT2)
 add_card(s, Inches(10.3), Inches(1.95), Inches(2.6), Inches(4.9),
          "4. Genetic / Other",
          ["Inbreeding",
           "Lethal genes",
           "Freemartinism",
           "White heifer disease",
-          "Age & parity"], head_color=ACCENT)
+          "Age & parity"], head_color=PRIMARY)
 
-add_footer(s, 6, 18)
+add_footer(s, 6, 19)
 
 # ============================================================
 # SLIDE 7 — INFECTIOUS / GENITAL CAUSES
@@ -361,7 +426,7 @@ add_bullets(s, [
     "Cystic ovarian disease (follicular & luteal cysts).",
     "Salpingitis & hydrosalpinx — block fertilization.",
 ], size=17)
-add_footer(s, 7, 18)
+add_footer(s, 7, 19)
 
 # ============================================================
 # SLIDE 8 — NUTRITIONAL CAUSES
@@ -383,7 +448,7 @@ add_bullets(s, [
     "Body Condition Score < 2.5 or > 4 at AI is strongly associated with "
     "repeat breeding.",
 ], size=17)
-add_footer(s, 8, 18)
+add_footer(s, 8, 19)
 
 # ============================================================
 # SLIDE 9 — HORMONAL CAUSES
@@ -400,14 +465,13 @@ add_bullets(s, [
     "Heat stress in summer — reduced oestradiol, weak signs of oestrus, "
     "poor oocyte quality.",
 ], size=18)
-add_footer(s, 9, 18)
+add_footer(s, 9, 19)
 
 # ============================================================
 # SLIDE 10 — MANAGEMENT / AI ERRORS
 # ============================================================
 s = prs.slides.add_slide(BLANK); add_bg(s); add_side_bar(s)
 add_title(s, "Management & Inseminator-Related Causes")
-
 add_bullets(s, [
     "Improper heat detection — single twice-daily check misses 25–50 % of heats.",
     "Wrong time of AI — outside the optimum window (mid- to late-oestrus).",
@@ -417,7 +481,7 @@ add_bullets(s, [
     "Hygiene lapses → introduction of pathogens at the time of AI.",
     "Lack of accurate breeding records and follow-up.",
 ], top=Inches(1.85), size=17)
-add_footer(s, 10, 18)
+add_footer(s, 10, 19)
 
 # ============================================================
 # SLIDE 11 — PATHOPHYSIOLOGY
@@ -425,7 +489,6 @@ add_footer(s, 10, 18)
 s = prs.slides.add_slide(BLANK); add_bg(s); add_side_bar(s)
 add_title(s, "Pathophysiology — Where Things Go Wrong")
 
-# horizontal flow boxes
 labels = ["Oestrus &\nOvulation", "Sperm\nTransport",
           "Fertilization", "Embryo\nDevelopment",
           "Maternal\nRecognition", "Pregnancy"]
@@ -444,7 +507,6 @@ for i, lab in enumerate(labels):
     r.font.size = Pt(13); r.font.bold = True
     r.font.color.rgb = WHITE; r.font.name = "Calibri"
 
-# arrow row
 for i in range(len(labels) - 1):
     arr_left = left + (i + 1) * w + i * Inches(0.07) - Inches(0.02)
     a = s.shapes.add_shape(MSO_SHAPE.RIGHT_ARROW, arr_left, top + Inches(0.42),
@@ -452,7 +514,6 @@ for i in range(len(labels) - 1):
     a.line.fill.background(); a.fill.solid()
     a.fill.fore_color.rgb = DARK
 
-# below — failure points
 add_bullets(s, [
     "Failure of ovulation or asynchronous ovulation → no fertilization.",
     "Sperm transport disturbance / hostile cervico-uterine environment.",
@@ -460,7 +521,7 @@ add_bullets(s, [
     "Early embryonic death (Day 8–16) — most common in repeat breeders.",
     "Failure of maternal recognition of pregnancy → CL regresses → return to oestrus.",
 ], top=Inches(3.6), size=16)
-add_footer(s, 11, 18)
+add_footer(s, 11, 19)
 
 # ============================================================
 # SLIDE 12 — DIAGNOSIS
@@ -481,10 +542,10 @@ add_bullets(s, [
     ("Serum progesterone, blood urea, minerals, liver / thyroid profile", 1),
     ("Serology / PCR — Brucella, IBR, BVD, Leptospira, Trichomonas", 1),
 ], size=15)
-add_footer(s, 12, 18)
+add_footer(s, 12, 19)
 
 # ============================================================
-# SLIDE 13 — TREATMENT GENERAL
+# SLIDE 13 — TREATMENT GENERAL (with image)
 # ============================================================
 s = prs.slides.add_slide(BLANK); add_bg(s); add_side_bar(s)
 add_title(s, "Treatment — General Principles",
@@ -494,12 +555,36 @@ add_bullets(s, [
     "Correct underlying nutrition & body condition (BCS 3.0–3.5 at AI).",
     "Treat genital tract infection (intra-uterine antibiotics, antiseptics).",
     "Correct hormonal imbalance with appropriate protocols.",
-    "Improve heat detection and AI timing (AM-PM rule / use of activity meters).",
+    "Improve heat detection and AI timing (AM-PM rule / activity meters).",
     "Use proven, high-quality semen; ensure proper thawing & deposition.",
     "Reduce stress — provide shade, water, comfortable housing, fly control.",
     "Maintain proper records; cull chronic non-responders after 5–6 services.",
-], top=Inches(1.85), size=18)
-add_footer(s, 13, 18)
+], left=Inches(0.85), top=Inches(1.85), width=Inches(8.0), size=16)
+
+add_image_with_frame(s, COW_FARM, Inches(9.1), Inches(2.0),
+                     Inches(3.7), Inches(2.74),
+                     "Well-managed dairy cow on farm")
+# small accent quote box
+qb = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
+                        Inches(9.1), Inches(5.1),
+                        Inches(3.7), Inches(1.6))
+qb.line.color.rgb = ACCENT; qb.line.width = Pt(1.5)
+qb.fill.solid(); qb.fill.fore_color.rgb = WHITE
+qtf = qb.text_frame; qtf.word_wrap = True
+qtf.margin_left = Inches(0.15); qtf.margin_right = Inches(0.15)
+qtf.margin_top = Inches(0.1)
+qp = qtf.paragraphs[0]
+qr = qp.add_run(); qr.text = "“Prevention is better, "
+qr.font.size = Pt(14); qr.font.italic = True; qr.font.bold = True
+qr.font.color.rgb = PRIMARY
+qr2 = qp.add_run(); qr2.text = "but timely treatment saves the cow.”"
+qr2.font.size = Pt(14); qr2.font.italic = True
+qr2.font.color.rgb = DARK
+qp2 = qtf.add_paragraph()
+qr3 = qp2.add_run(); qr3.text = "— Field motto in dairy practice"
+qr3.font.size = Pt(11); qr3.font.color.rgb = GRAY
+
+add_footer(s, 13, 19)
 
 # ============================================================
 # SLIDE 14 — HORMONAL PROTOCOLS
@@ -524,9 +609,9 @@ add_card(s, Inches(9.05), Inches(1.95), Inches(3.85), Inches(5.0),
          ["GnRH (D0) → PGF2α (D7) → GnRH (D9) → AI 16h later",
           "Synchronises ovulation precisely",
           "Useful in herds with poor heat detection",
-          "Modified Ovsynch / Co-Synch / Double-Ovsynch for repeat breeders"])
-
-add_footer(s, 14, 18)
+          "Modified Ovsynch / Co-Synch / Double-Ovsynch for repeaters"],
+         head_color=ACCENT2)
+add_footer(s, 14, 19)
 
 # ============================================================
 # SLIDE 15 — INTRA-UTERINE THERAPY
@@ -546,10 +631,59 @@ add_bullets(s, [
     ("Herbal / Ayurvedic preparations (e.g. Aloes compound, Janova, "
      "Prajana) — adjunct support.", 0),
 ], size=16)
-add_footer(s, 15, 18)
+add_footer(s, 15, 19)
 
 # ============================================================
-# SLIDE 16 — PREVENTION
+# SLIDE 16 — BUFFALO-SPECIFIC REPEAT BREEDING (NEW)
+# ============================================================
+s = prs.slides.add_slide(BLANK); add_bg(s); add_side_bar(s)
+add_title(s, "Buffalo-Specific Repeat Breeding",
+          "Why buffaloes pose unique reproductive challenges")
+
+# image (large, left side)
+add_image_with_frame(s, BUFFALO, Inches(0.85), Inches(1.9),
+                     Inches(4.5), Inches(3.1),
+                     "Murrah buffalo (Bubalus bubalis)")
+
+# right side bullets
+add_bullets(s, [
+    "Silent / sub-oestrus is common — up to 50–60 % of heats are missed "
+    "without close observation.",
+    "Late maturity (36–42 months) and longer post-partum anoestrus "
+    "(90–150 days) than cows.",
+    "Strongly seasonal breeder — short photoperiod (Oct–Feb) is the "
+    "peak breeding season.",
+    "Summer infertility: heat stress depresses LH surge, oocyte quality "
+    "and embryo survival.",
+    "Smaller, deeper-seated ovaries with fewer antral follicles than cows.",
+    "Higher incidence of true anoestrus, ovarian inactivity and "
+    "anovulatory cysts.",
+], left=Inches(5.6), top=Inches(1.9), width=Inches(7.3),
+   height=Inches(3.5), size=14)
+
+# bottom — practical management cards
+add_card(s, Inches(0.85), Inches(5.2), Inches(3.95), Inches(1.85),
+         "Heat Detection",
+         ["Observe 4–5 times/day, esp. early morning & late evening",
+          "Use teaser bull / pedometer / activity meter",
+          "Watch for vulvar oedema, mucus, bellowing"])
+add_card(s, Inches(4.95), Inches(5.2), Inches(3.95), Inches(1.85),
+         "Hormonal / Synchrony",
+         ["Ovsynch / Heatsynch / CIDR-based protocols work well",
+          "Double-Ovsynch & Pre-synch improve summer conception",
+          "GnRH at AI improves ovulation in late-cycling buffaloes"],
+         head_color=ACCENT)
+add_card(s, Inches(9.05), Inches(5.2), Inches(3.85), Inches(1.85),
+         "Environment & Nutrition",
+         ["Wallowing tank / showers in summer (>32 °C)",
+          "Shade, fans, fly control",
+          "Bypass fat & mineral supplementation"],
+         head_color=ACCENT2)
+
+add_footer(s, 16, 19)
+
+# ============================================================
+# SLIDE 17 — PREVENTION
 # ============================================================
 s = prs.slides.add_slide(BLANK); add_bg(s); add_side_bar(s)
 add_title(s, "Prevention — Better Than Cure")
@@ -565,24 +699,26 @@ add_card(s, Inches(7.0), Inches(1.95), Inches(5.9), Inches(2.4),
          ["Balanced ration with adequate energy, protein & minerals",
           "Body condition scoring at dry-off, calving and AI",
           "Heat detection 3× daily / use of pedometers / activity collars",
-          "AI by trained technicians using fertile, properly thawed semen"], head_color=ACCENT)
+          "AI by trained technicians using fertile, properly thawed semen"],
+         head_color=ACCENT)
 add_card(s, Inches(0.85), Inches(4.5), Inches(5.9), Inches(2.4),
          "Environment",
          ["Provide shade, fans, sprinklers in summer",
           "Comfortable, non-slippery flooring",
           "Adequate water and clean housing",
-          "Reduce overcrowding & social stress"])
+          "Reduce overcrowding & social stress"],
+         head_color=ACCENT2)
 add_card(s, Inches(7.0), Inches(4.5), Inches(5.9), Inches(2.4),
          "Records & Decisions",
          ["Maintain individual breeding records / software",
           "Identify chronic repeaters early",
           "Selective culling of non-responders after 5–6 services",
-          "Periodic herd fertility audit"], head_color=ACCENT)
+          "Periodic herd fertility audit"], head_color=PRIMARY)
 
-add_footer(s, 16, 18)
+add_footer(s, 17, 19)
 
 # ============================================================
-# SLIDE 17 — RECENT ADVANCES
+# SLIDE 18 — RECENT ADVANCES
 # ============================================================
 s = prs.slides.add_slide(BLANK); add_bg(s); add_side_bar(s)
 add_title(s, "Recent Advances")
@@ -599,15 +735,14 @@ add_bullets(s, [
     "oocyte and embryo quality.",
     "Targeted reproductive ultrasonography & uterine biopsy for refractory cases.",
 ], size=17)
-add_footer(s, 17, 18)
+add_footer(s, 18, 19)
 
 # ============================================================
-# SLIDE 18 — CONCLUSION & REFERENCES
+# SLIDE 19 — CONCLUSION & REFERENCES
 # ============================================================
 s = prs.slides.add_slide(BLANK); add_bg(s); add_side_bar(s)
 add_title(s, "Conclusion & References")
 
-# conclusion box
 box = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
                          Inches(0.85), Inches(1.85),
                          Inches(11.6), Inches(2.2))
@@ -627,17 +762,16 @@ for line in [
     "disease.",
     "Successful management requires accurate diagnosis, correction of "
     "nutrition, infection and hormonal imbalance, plus excellent AI practices.",
+    "Buffaloes need extra attention to silent oestrus, seasonality and "
+    "summer heat-stress mitigation.",
     "Prevention — through good husbandry, heat detection and herd health "
     "programs — is far more economical than treatment.",
-    "Early identification and timely intervention can return most repeat "
-    "breeders to productive reproduction.",
 ]:
     p = tf.add_paragraph()
     r = p.add_run(); r.text = "• " + line
     r.font.size = Pt(13); r.font.color.rgb = DARK; r.font.name = "Calibri"
     p.space_after = Pt(2)
 
-# references
 ref_box = s.shapes.add_textbox(Inches(0.85), Inches(4.2),
                                Inches(11.6), Inches(2.7))
 rtf = ref_box.text_frame; rtf.word_wrap = True
@@ -654,6 +788,7 @@ refs = [
     "Bartlett P.C. et al. — Repeat breeder syndrome in dairy cattle, JDS.",
     "Gustafsson H. & Emanuelson U. — Characterisation of the repeat breeding "
     "syndrome in Swedish dairy cattle, Acta Vet. Scand.",
+    "Perera B.M.A.O. — Reproductive cycles of buffalo, Anim. Reprod. Sci.",
 ]
 for ref in refs:
     p = rtf.add_paragraph()
@@ -661,20 +796,31 @@ for ref in refs:
     rr.font.size = Pt(12); rr.font.color.rgb = DARK; rr.font.name = "Calibri"
     p.space_after = Pt(2)
 
+# image-credit footnote
+cred = s.shapes.add_textbox(Inches(0.85), Inches(6.8),
+                            Inches(11.6), Inches(0.3))
+cp = cred.text_frame.paragraphs[0]
+cr = cp.add_run()
+cr.text = ("Image credits: photographs of cows and buffaloes are from "
+           "Wikimedia Commons (CC BY-SA / public domain).")
+cr.font.size = Pt(9); cr.font.italic = True
+cr.font.color.rgb = GRAY; cr.font.name = "Calibri"
+
 # Thank you ribbon
 ty = s.shapes.add_shape(MSO_SHAPE.RECTANGLE,
-                        Inches(4.7), Inches(6.7),
-                        Inches(4.0), Inches(0.5))
+                        Inches(4.7), Inches(7.05),
+                        Inches(4.0), Inches(0.4))
 ty.line.fill.background(); ty.fill.solid()
 ty.fill.fore_color.rgb = ACCENT
 ttf = ty.text_frame
+ttf.margin_top = Inches(0.02); ttf.margin_bottom = Inches(0.02)
 tp = ttf.paragraphs[0]; tp.alignment = PP_ALIGN.CENTER
 tr = tp.add_run(); tr.text = "THANK YOU"
-tr.font.size = Pt(18); tr.font.bold = True
-tr.font.color.rgb = PRIMARY; tr.font.name = "Calibri"
+tr.font.size = Pt(16); tr.font.bold = True
+tr.font.color.rgb = WHITE; tr.font.name = "Calibri"
 
 # Save
-out = "/projects/sandbox/MAIN-KIRO/Repeat_Breeding.pptx"
+out = os.path.join(HERE, "Repeat_Breeding.pptx")
 prs.save(out)
 print(f"Saved: {out}")
 print(f"Total slides: {len(prs.slides)}")
