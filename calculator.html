@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Calculator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #0d0d2b, #1a1a3e); font-family: 'Segoe UI', sans-serif; }
+        .calculator { background: #16213e; border-radius: 20px; padding: 24px; box-shadow: 0 25px 80px rgba(0,0,0,0.6); width: 420px; }
+        h3 { color: #7c4dba; text-align: center; margin-bottom: 16px; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; }
+        .display { background: #0a1628; border-radius: 14px; padding: 18px 20px; margin-bottom: 18px; text-align: right; min-height: 90px; display: flex; flex-direction: column; justify-content: flex-end; border: 1px solid #1e3a5f; }
+        .display .expression { color: #6b8cae; font-size: 13px; min-height: 18px; word-break: break-all; margin-bottom: 4px; }
+        .display .result { color: #e8f0fe; font-size: 30px; font-weight: bold; word-break: break-all; }
+        .mode-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .mode-bar span { color: #6b8cae; font-size: 11px; }
+        .mode-bar button { background: #1a1a3e; border: 1px solid #2a2a5e; color: #a0c4ff; border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; }
+        .mode-bar button.active { background: #533483; border-color: #7c4dba; color: #fff; }
+        .buttons { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        button { border: none; border-radius: 10px; padding: 14px 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.12s; }
+        button:active { transform: scale(0.93); }
+        .btn-num { background: #1c2541; color: #e0e0e0; }
+        .btn-num:hover { background: #2a3a5e; }
+        .btn-op { background: #e94560; color: #fff; }
+        .btn-op:hover { background: #ff6b6b; }
+        .btn-sci { background: #0f3460; color: #a0c4ff; font-size: 12px; }
+        .btn-sci:hover { background: #1a4a7a; }
+        .btn-func { background: #533483; color: #fff; }
+        .btn-func:hover { background: #7c4dba; }
+        .btn-eq { background: #0f9b58; color: #fff; font-size: 18px; }
+        .btn-eq:hover { background: #12b86a; }
+        .btn-zero { grid-column: span 2; }
+        .memory-bar { display: flex; gap: 6px; margin-bottom: 10px; }
+        .memory-bar button { flex: 1; background: #1c2541; border: 1px solid #2a2a5e; color: #6b8cae; border-radius: 6px; padding: 6px; font-size: 11px; cursor: pointer; }
+        .memory-bar button:hover { background: #2a3a5e; color: #a0c4ff; }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h3>Scientific Calculator</h3>
+        <div class="display">
+            <div class="expression" id="expression"></div>
+            <div class="result" id="result">0</div>
+        </div>
+        <div class="mode-bar">
+            <span id="modeLabel">RAD</span>
+            <div>
+                <button id="btnRad" class="active" onclick="setMode('rad')">RAD</button>
+                <button id="btnDeg" onclick="setMode('deg')">DEG</button>
+            </div>
+        </div>
+        <div class="memory-bar">
+            <button onclick="memoryClear()">MC</button>
+            <button onclick="memoryRecall()">MR</button>
+            <button onclick="memoryAdd()">M+</button>
+            <button onclick="memorySub()">M-</button>
+            <button onclick="memoryStore()">MS</button>
+        </div>
+        <div class="buttons">
+            <button class="btn-sci" onclick="sciFunc('sin')">sin</button>
+            <button class="btn-sci" onclick="sciFunc('cos')">cos</button>
+            <button class="btn-sci" onclick="sciFunc('tan')">tan</button>
+            <button class="btn-sci" onclick="sciFunc('log')">log</button>
+            <button class="btn-sci" onclick="sciFunc('ln')">ln</button>
+
+            <button class="btn-sci" onclick="sciFunc('asin')">sin⁻¹</button>
+            <button class="btn-sci" onclick="sciFunc('acos')">cos⁻¹</button>
+            <button class="btn-sci" onclick="sciFunc('atan')">tan⁻¹</button>
+            <button class="btn-sci" onclick="sciFunc('sqrt')">√</button>
+            <button class="btn-sci" onclick="sciFunc('cbrt')">³√</button>
+
+            <button class="btn-sci" onclick="sciFunc('square')">x²</button>
+            <button class="btn-sci" onclick="sciFunc('cube')">x³</button>
+            <button class="btn-sci" onclick="appendOp('**')">xʸ</button>
+            <button class="btn-sci" onclick="sciFunc('inv')">1/x</button>
+            <button class="btn-sci" onclick="sciFunc('fact')">n!</button>
+
+            <button class="btn-sci" onclick="insertConst('pi')">π</button>
+            <button class="btn-sci" onclick="insertConst('e')">e</button>
+            <button class="btn-sci" onclick="sciFunc('exp')">eˣ</button>
+            <button class="btn-sci" onclick="sciFunc('log2')">log₂</button>
+            <button class="btn-sci" onclick="sciFunc('abs')">|x|</button>
+
+            <button class="btn-func" onclick="clearAll()">C</button>
+            <button class="btn-func" onclick="backspace()">⌫</button>
+            <button class="btn-func" onclick="toggleSign()">+/-</button>
+            <button class="btn-func" onclick="percentage()">%</button>
+            <button class="btn-op" onclick="appendOp('/')">/</button>
+
+            <button class="btn-num" onclick="appendNum('7')">7</button>
+            <button class="btn-num" onclick="appendNum('8')">8</button>
+            <button class="btn-num" onclick="appendNum('9')">9</button>
+            <button class="btn-sci" onclick="appendParen('(')">(</button>
+            <button class="btn-op" onclick="appendOp('*')">×</button>
+
+            <button class="btn-num" onclick="appendNum('4')">4</button>
+            <button class="btn-num" onclick="appendNum('5')">5</button>
+            <button class="btn-num" onclick="appendNum('6')">6</button>
+            <button class="btn-sci" onclick="appendParen(')')">)</button>
+            <button class="btn-op" onclick="appendOp('-')">−</button>
+
+            <button class="btn-num" onclick="appendNum('1')">1</button>
+            <button class="btn-num" onclick="appendNum('2')">2</button>
+            <button class="btn-num" onclick="appendNum('3')">3</button>
+            <button class="btn-sci" onclick="sciFunc('10pow')">10ˣ</button>
+            <button class="btn-op" onclick="appendOp('+')">+</button>
+
+            <button class="btn-num btn-zero" onclick="appendNum('0')">0</button>
+            <button class="btn-num" onclick="appendNum('.')">.</button>
+            <button class="btn-sci" onclick="appendNum('e')">EXP</button>
+            <button class="btn-eq" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        let current = '0';
+        let expression = '';
+        let shouldReset = false;
+        let mode = 'rad';
+        let memory = 0;
+
+        function updateDisplay() {
+            document.getElementById('result').textContent = current;
+            document.getElementById('expression').textContent = expression;
+        }
+
+        function setMode(m) {
+            mode = m;
+            document.getElementById('modeLabel').textContent = m.toUpperCase();
+            document.getElementById('btnRad').classList.toggle('active', m === 'rad');
+            document.getElementById('btnDeg').classList.toggle('active', m === 'deg');
+        }
+
+        function toRad(val) { return mode === 'deg' ? val * Math.PI / 180 : val; }
+        function fromRad(val) { return mode === 'deg' ? val * 180 / Math.PI : val; }
+
+        function appendNum(num) {
+            if (shouldReset) { current = '0'; shouldReset = false; }
+            if (num === '.' && current.includes('.')) return;
+            current = current === '0' && num !== '.' ? num : current + num;
+            updateDisplay();
+        }
+
+        function appendOp(op) {
+            expression = current + ' ' + op + ' ';
+            shouldReset = true;
+            updateDisplay();
+        }
+
+        function appendParen(p) {
+            if (shouldReset) { current = ''; shouldReset = false; }
+            current += p;
+            updateDisplay();
+        }
+
+        function calculate() {
+            if (!expression) return;
+            let expr = expression + current;
+            try {
+                let sanitized = expr.replace(/[^0-9+\-*/().eE\s^]/g, '');
+                let result = Function('"use strict"; return (' + expr.replace('=','') + ')')();
+                result = Math.round(result * 1e12) / 1e12;
+                if (!isFinite(result)) { current = 'Error'; } 
+                else { current = String(result); }
+                expression = expr + ' =';
+                shouldReset = true;
+                updateDisplay();
+            } catch { current = 'Error'; updateDisplay(); }
+        }
+
+        function clearAll() { current = '0'; expression = ''; shouldReset = false; updateDisplay(); }
+
+        function backspace() {
+            if (current.length > 1) current = current.slice(0, -1);
+            else current = '0';
+            updateDisplay();
+        }
+
+        function toggleSign() {
+            if (current !== '0') current = String(-parseFloat(current));
+            updateDisplay();
+        }
+
+        function percentage() {
+            current = String(parseFloat(current) / 100);
+            updateDisplay();
+        }
+
+        function factorial(n) {
+            if (n < 0) return NaN;
+            if (n === 0 || n === 1) return 1;
+            if (n > 170) return Infinity;
+            let r = 1;
+            for (let i = 2; i <= n; i++) r *= i;
+            return r;
+        }
+
+        function sciFunc(fn) {
+            let val = parseFloat(current);
+            let result;
+            switch(fn) {
+                case 'sin': result = Math.sin(toRad(val)); break;
+                case 'cos': result = Math.cos(toRad(val)); break;
+                case 'tan': result = Math.tan(toRad(val)); break;
+                case 'asin': result = fromRad(Math.asin(val)); break;
+                case 'acos': result = fromRad(Math.acos(val)); break;
+                case 'atan': result = fromRad(Math.atan(val)); break;
+                case 'log': result = Math.log10(val); break;
+                case 'ln': result = Math.log(val); break;
+                case 'log2': result = Math.log2(val); break;
+                case 'sqrt': result = Math.sqrt(val); break;
+                case 'cbrt': result = Math.cbrt(val); break;
+                case 'square': result = val * val; break;
+                case 'cube': result = val * val * val; break;
+                case 'inv': result = 1 / val; break;
+                case 'fact': result = factorial(Math.floor(val)); break;
+                case 'exp': result = Math.exp(val); break;
+                case '10pow': result = Math.pow(10, val); break;
+                case 'abs': result = Math.abs(val); break;
+                default: return;
+            }
+            result = Math.round(result * 1e12) / 1e12;
+            expression = fn + '(' + current + ') =';
+            current = isFinite(result) ? String(result) : 'Error';
+            shouldReset = true;
+            updateDisplay();
+        }
+
+        function insertConst(c) {
+            if (c === 'pi') current = String(Math.PI);
+            else if (c === 'e') current = String(Math.E);
+            shouldReset = false;
+            updateDisplay();
+        }
+
+        function memoryClear() { memory = 0; }
+        function memoryRecall() { current = String(memory); shouldReset = false; updateDisplay(); }
+        function memoryAdd() { memory += parseFloat(current); }
+        function memorySub() { memory -= parseFloat(current); }
+        function memoryStore() { memory = parseFloat(current); }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key >= '0' && e.key <= '9' || e.key === '.') appendNum(e.key);
+            else if (['+', '-', '*', '/'].includes(e.key)) appendOp(e.key);
+            else if (e.key === 'Enter' || e.key === '=') { e.preventDefault(); calculate(); }
+            else if (e.key === 'Escape') clearAll();
+            else if (e.key === 'Backspace') backspace();
+            else if (e.key === '(' || e.key === ')') appendParen(e.key);
+        });
+    </script>
+</body>
+</html>
